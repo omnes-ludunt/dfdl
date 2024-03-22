@@ -9,8 +9,6 @@ import tempfile
 import subprocess
 import time
 import urllib.request
-# import zipfile
-# import tarfile
 from pathlib import Path
 from html.parser import HTMLParser
 
@@ -93,16 +91,6 @@ class Package:
     def unpack(self, src, dest):
         shutil.unpack_archive(src, dest)
 
-    def unzip(self, src, dest):
-        shutil.unpack_archive(src, dest, "zip")
-    #     with zipfile.ZipFile(src, 'r') as zip_ref:
-    #         zip_ref.extractall(dest)
-
-    def untarbz2(self, src, dest):
-        shutil.unpack_archive(src, dest, "bztar")
-    #     with tarfile.open(src, 'r:bz2') as tar_ref:
-    #         tar_ref.extractall(dest)
-
 class BitBucketPackage(Package):
     def get_list(self):
         if not hasattr(self, '_list'):
@@ -116,13 +104,12 @@ class BitBucketPackage(Package):
 
 class GitHubPackage(Package):
     def get_list(self):
-        # print("Retrieving version list from GitHub API")
         if not hasattr(self, '_list'):
             page = 1
             assets = []
             while True:
                 # Construct the URL with pagination parameters
-                page_url = f"{self.releases_url}?page={page}&per_page=100"  # Adjust per_page as needed
+                page_url = f"{self.releases_url}?page={page}&per_page=100"
 
                 response = urllib.request.urlopen(page_url)
                 if response.status == 200:
@@ -131,7 +118,7 @@ class GitHubPackage(Package):
                     assets.extend(current_assets)
                     
                     # Check if there are more pages to fetch
-                    if len(current_assets) < 100:  # Assuming 100 releases per page, adjust if needed
+                    if len(current_assets) < 100:  # 100 releases per page from "&per_page=100"
                         break
                     else:
                         page += 1
@@ -158,7 +145,7 @@ class PyLNPPackage(GitHubPackage):
         if self.os_ver == 'mac32' or self.os_ver == 'mac64':
             subprocess.run(["ditto", "-xk", f"{self.cache_dir}/{self.filename}", self.release_dir])
         else:
-            self.unzip(f"{self.cache_dir}/{self.filename}", self.release_dir)
+            self.unpack(f"{self.cache_dir}/{self.filename}", self.release_dir)
 
 class DFPackage(Package):    
     def match_name(self, name):
@@ -180,9 +167,6 @@ class DFPackage(Package):
             self._list = [{'name': href, 'url': f"http://bay12games.com/dwarves/{href}"} for href in parser.hrefs if self.match_name(href)]
         return self._list
 
-    # def extract(self):
-    #     self.untarbz2(f"{self.cache_dir}/{self.filename}", self.release_dir)
-
 class DFHackPackage(GitHubPackage):
     def match_name(self, name):
         os_in = {
@@ -200,18 +184,16 @@ class DFHackPackage(GitHubPackage):
         return "https://api.github.com/repos/DFHack/dfhack/releases"
 
     def extract(self):
-        self.untarbz2(f"{self.cache_dir}/{self.filename}", f"{self.release_dir}/df_osx")
+        self.unpack(f"{self.cache_dir}/{self.filename}", f"{self.release_dir}/df_osx")
 
 class TWBTPackage(GitHubPackage):
-    # def match_name(self, name):
-    #     return 'osx' in name
 
     @property
     def releases_url(self):
         return "https://api.github.com/repos/thurin/df-twbt/releases"
 
     def extract(self):
-        self.unzip(f"{self.cache_dir}/{self.filename}", f"{self.release_dir}/twbt")
+        self.unpack(f"{self.cache_dir}/{self.filename}", f"{self.release_dir}/twbt")
         for ext in ['png', 'lua', 'dylib']:
             for file_path in Path(f"{self.release_dir}/twbt").glob(f"*.{ext}"):
                 if ext == 'dylib':
@@ -239,7 +221,7 @@ class PEStarterPackPackage(Package):
     
 
     def extract(self):
-        self.unzip(f"{self.cache_dir}/{self.filename}", self.release_dir)
+        self.unpack(f"{self.cache_dir}/{self.filename}", self.release_dir)
         for file_path in Path(self.release_dir).glob("*.exe"):
             os.remove(file_path)
         for file_path in Path(self.release_dir).glob("Dwarf Fortress *"):
@@ -283,14 +265,6 @@ class Release:
             return os_ver[detected_os]
         else:
             print("\nSelect your OS, by inputting the corresponding number:")
-            # os_list = [
-            #     {'desc': 'Windows (32-bit)', 'ver': 'win32'},
-            #     {'desc': 'Windows (64-bit)', 'ver': 'win64'},
-            #     {'desc': 'Linux (32-bit)', 'ver': 'lin32'},
-            #     {'desc': 'Linux (64-bit)', 'ver': 'lin64'},
-            #     {'desc': 'Mac (32-bit)', 'ver': 'mac32'},
-            #     {'desc': 'Mac (64-bit)', 'ver': 'mac64'}
-            # ]
             os_list = [
                 'Windows (32-bit)',
                 'Windows (64-bit)',
@@ -302,7 +276,6 @@ class Release:
             for i, n in enumerate(os_list, start=1):
                 print(f"{len(os_list)-i+1}) {n}")
             index = len(os_list)-int(input())
-            # choice = os_list[index]
             return os_ver[os_list[index]]
 
     def verify_target(self):
