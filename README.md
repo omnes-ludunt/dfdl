@@ -37,6 +37,8 @@ graphic packs, I may change this to actually retrieve them from their source.
 I am _not_ retrieving any utilities at the moment. In the future I expect to
 download all utilities currently provided by PE's starter pack that have a
 Mac version.
+
+Token Management
 ---
 
 If you wish to modify this to use github tokens I recommend using json, as so:
