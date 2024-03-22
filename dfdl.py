@@ -264,6 +264,14 @@ class Release:
         print(f"Will move finished directory to target folder {self.target_dir}")
 
     def check_os(self):
+        os_ver = {
+            'Windows (32-bit)' : 'win32',
+            'Windows (64-bit)' : 'win64',
+            'Linux (32-bit)' : 'lin32',
+            'Linux (64-bit)' : 'lin64',
+            'Mac (32-bit)' : 'mac32',
+            'Mac (64-bit)' : 'mac64'
+        }
         os_match = {
             'Windows':['Windows (32-bit)','Windows (64-bit)'],
             'Linux':['Linux (32-bit)','Linux (64-bit)'],
@@ -272,38 +280,30 @@ class Release:
         detected_os = os_match[platform.system()][sys.maxsize > 2**32]
         choice = input(f"\nSystem detected as '{detected_os}'. Is this correct? (y/n)")
         if choice.lower() == "y":
-            os_ver = {
-                'Windows (32-bit)' : 'win32',
-                'Windows (64-bit)' : 'win64',
-                'Linux (32-bit)' : 'lin32',
-                'Linux (64-bit)' : 'lin64',
-                'Mac (32-bit)' : 'mac32',
-                'Mac (64-bit)' : 'mac64'
-            }
             return os_ver[detected_os]
         else:
             print("\nSelect your OS, by inputting the corresponding number:")
-            os_list = [
-                {'desc': 'Windows (32-bit)', 'ver': 'win32'},
-                {'desc': 'Windows (64-bit)', 'ver': 'win64'},
-                {'desc': 'Linux (32-bit)', 'ver': 'lin32'},
-                {'desc': 'Linux (64-bit)', 'ver': 'lin64'},
-                {'desc': 'Mac (32-bit)', 'ver': 'mac32'},
-                {'desc': 'Mac (64-bit)', 'ver': 'mac64'}
-            ]
             # os_list = [
-            #     'Windows (32-bit)',
-            #     'Windows (64-bit)',
-            #     'Linux (32-bit)',
-            #     'Linux (64-bit)', 
-            #     'Mac (32-bit)',
-            #     'Mac (64-bit)'
+            #     {'desc': 'Windows (32-bit)', 'ver': 'win32'},
+            #     {'desc': 'Windows (64-bit)', 'ver': 'win64'},
+            #     {'desc': 'Linux (32-bit)', 'ver': 'lin32'},
+            #     {'desc': 'Linux (64-bit)', 'ver': 'lin64'},
+            #     {'desc': 'Mac (32-bit)', 'ver': 'mac32'},
+            #     {'desc': 'Mac (64-bit)', 'ver': 'mac64'}
             # ]
+            os_list = [
+                'Windows (32-bit)',
+                'Windows (64-bit)',
+                'Linux (32-bit)',
+                'Linux (64-bit)', 
+                'Mac (32-bit)',
+                'Mac (64-bit)'
+            ]
             for i, n in enumerate(os_list, start=1):
-                print(f"{len(os_list)-i+1}) {n['desc']}")
+                print(f"{len(os_list)-i+1}) {n}")
             index = len(os_list)-int(input())
-            choice = os_list[index]
-            return choice['ver']
+            # choice = os_list[index]
+            return os_ver[os_list[index]]
 
     def verify_target(self):
         if os.path.exists(self.target_dir):

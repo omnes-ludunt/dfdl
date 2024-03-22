@@ -69,8 +69,10 @@ in the init function.
 
 ## Dependencies
 
-The script should have no dependencies other than base python 3.6+. On mac it calls the os-specific command `ditto` as a subprocess, which should be included in every mac distribution.
-If a command line utility like `ditto` is not present consider using homebrew or other relevant package installers.
+The script should have no dependencies other than base python 3.6+. On mac 
+it calls the os-specific command `ditto` as a subprocess, which should be 
+included in every mac distribution. If a command line utility like `ditto` 
+is not present consider using homebrew or other relevant package installers.
 
 ## Running
 
@@ -81,7 +83,6 @@ You start the script from a terminal by running
 ```
 
 It will provide a list of different versions of each package, you
-choose one by entering its number and pressing enter.
-
-I'm currently using the latest 64 bit mac versions of all packages (e.g. with df 47.05),
+choose one by entering its number and pressing enter. I'm currently 
+using the latest 64 bit mac versions of all packages (e.g. with df 47.05),
 from which both the LNP and the dfhack Dwarf Fortress.apps work.
