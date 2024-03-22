@@ -1,0 +1,6 @@
+/package_cache
+/df-*
+/config.json
+/tilesets
+*__pycache__/
+*.DS_Store
