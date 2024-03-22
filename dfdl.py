@@ -67,6 +67,15 @@ class Package:
         self.extract()
 
     def filter_name(self, name): 
+        # os_rem = {
+        #     # {'ver': '', 'rem': ['mac','osx','OSX','lin','Lin','win','Win','64','32']},
+        #     'Windows (32-bit)': ['mac','osx','OSX','lin','Lin','64'],
+        #     'Windows (64-bit)': ['mac','osx','OSX','lin','Lin','32'],
+        #     'Linux (32-bit)': ['mac','osx','OSX','win','Win','64'],
+        #     'Linux (64-bit)': ['mac','osx','OSX','win','Win','32'],
+        #     'Mac (32-bit)': ['lin','Lin','win','Win','64'],
+        #     'Mac (64-bit)': ['lin','Lin','win','Win','32']
+        # }
         os_rem = {
             # {'ver': '', 'rem': ['mac','osx','OSX','lin','Lin','win','Win','64','32']},
             'win32': ['mac','osx','OSX','lin','Lin','64'],
@@ -263,7 +272,15 @@ class Release:
         detected_os = os_match[platform.system()][sys.maxsize > 2**32]
         choice = input(f"\nSystem detected as '{detected_os}'. Is this correct? (y/n)")
         if choice.lower() == "y":
-            return detected_os
+            os_ver = {
+                'Windows (32-bit)' : 'win32',
+                'Windows (64-bit)' : 'win64',
+                'Linux (32-bit)' : 'lin32',
+                'Linux (64-bit)' : 'lin64',
+                'Mac (32-bit)' : 'mac32',
+                'Mac (64-bit)' : 'mac64'
+            }
+            return os_ver[detected_os]
         else:
             print("\nSelect your OS, by inputting the corresponding number:")
             os_list = [
@@ -274,6 +291,14 @@ class Release:
                 {'desc': 'Mac (32-bit)', 'ver': 'mac32'},
                 {'desc': 'Mac (64-bit)', 'ver': 'mac64'}
             ]
+            # os_list = [
+            #     'Windows (32-bit)',
+            #     'Windows (64-bit)',
+            #     'Linux (32-bit)',
+            #     'Linux (64-bit)', 
+            #     'Mac (32-bit)',
+            #     'Mac (64-bit)'
+            # ]
             for i, n in enumerate(os_list, start=1):
                 print(f"{len(os_list)-i+1}) {n['desc']}")
             index = len(os_list)-int(input())
