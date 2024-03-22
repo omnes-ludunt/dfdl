@@ -74,14 +74,14 @@ If a command line utility like `ditto` is not present consider using homebrew or
 
 ## Running
 
-You start the script by running
+You start the script from a terminal by running
 
 ```
 ./dfdl.py
 ```
 
-It will provide a list for different versions of each package, you
+It will provide a list of different versions of each package, you
 choose one by entering its number and pressing enter.
 
 I'm currently using the latest 64 bit mac versions of all packages (e.g. with df 47.05),
-from which the dfhack Dwarf Fortress.app works but not the LNP, so far.
+from which both the LNP and the dfhack Dwarf Fortress.apps work.
