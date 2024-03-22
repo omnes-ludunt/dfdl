@@ -66,8 +66,8 @@ in the init function.
 
 ## Dependencies
 
-The script depends on the curl, unzip, tar and bzip2 system utilities.
-If these are not present consider using homebrew or other relevant package installers.
+The script should have no dependencies other than base python 3.6+. On mac it calls the os-specific command `ditto` as a subprocess, which should be included in every mac distribution.
+If a command line utility like `ditto` is not present consider using homebrew or other relevant package installers.
 
 ## Running
 

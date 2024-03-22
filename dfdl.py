@@ -2,7 +2,9 @@
 
 import os
 import json
+import platform
 import shutil
+import sys
 import tempfile
 import subprocess
 import time
@@ -242,20 +244,7 @@ class PEStarterPackPackage(Package):
 
 class Release:
     def __init__(self):
-        print("\nSelect your OS, by inputting the corresponding number:")
-        os_list = [
-            {'desc': 'Windows (32-bit)', 'ver': 'win32'},
-            {'desc': 'Windows (64-bit)', 'ver': 'win64'},
-            {'desc': 'Linux (32-bit)', 'ver': 'lin32'},
-            {'desc': 'Linux (64-bit)', 'ver': 'lin64'},
-            {'desc': 'Mac (32-bit)', 'ver': 'mac32'},
-            {'desc': 'Mac (64-bit)', 'ver': 'mac64'}
-        ]
-        for i, n in enumerate(os_list, start=1):
-            print(f"{len(os_list)-i+1}) {n['desc']}")
-        index = len(os_list)-int(input())
-        choice = os_list[index]
-        self.os_ver = choice['ver']
+        self.os_ver = self.check_os()
         self.temp_dir_obj = tempfile.TemporaryDirectory()
         self.release_dir = self.temp_dir_obj.name
         print(f"Preparing temporary directory at {self.release_dir}")
@@ -264,6 +253,32 @@ class Release:
         # self.target_dir = f"df-{os.environ['USER']}-{int(time.time())}"
         self.target_dir = f"df-{os.environ['USER']}-{time.strftime('%Y-%m-%d')}"
         print(f"Will move finished directory to target folder {self.target_dir}")
+
+    def check_os(self):
+        os_match = {
+            'Windows':['Windows (32-bit)','Windows (64-bit)'],
+            'Linux':['Linux (32-bit)','Linux (64-bit)'],
+            'Darwin':['Mac (32-bit)','Mac (64-bit)']
+        }
+        detected_os = os_match[platform.system()][sys.maxsize > 2**32]
+        choice = input(f"\nSystem detected as '{detected_os}'. Is this correct? (y/n)")
+        if choice.lower() == "y":
+            return detected_os
+        else:
+            print("\nSelect your OS, by inputting the corresponding number:")
+            os_list = [
+                {'desc': 'Windows (32-bit)', 'ver': 'win32'},
+                {'desc': 'Windows (64-bit)', 'ver': 'win64'},
+                {'desc': 'Linux (32-bit)', 'ver': 'lin32'},
+                {'desc': 'Linux (64-bit)', 'ver': 'lin64'},
+                {'desc': 'Mac (32-bit)', 'ver': 'mac32'},
+                {'desc': 'Mac (64-bit)', 'ver': 'mac64'}
+            ]
+            for i, n in enumerate(os_list, start=1):
+                print(f"{len(os_list)-i+1}) {n['desc']}")
+            index = len(os_list)-int(input())
+            choice = os_list[index]
+            return choice['ver']
 
     def verify_target(self):
         if os.path.exists(self.target_dir):
