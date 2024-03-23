@@ -126,7 +126,7 @@ class PyLNPPackage(GitHubPackage):
         return "https://api.github.com/repos/Pidgeot/python-lnp/releases"
 
     def extract(self):
-        if self.os_ver == 'mac32' or self.os_ver == 'mac64':
+        if self.os_ver in ['mac32','mac64']:
             subprocess.run(["ditto", "-xk", f"{self.cache_dir}/{self.filename}", self.release_dir])
         else:
             self.unpack(f"{self.cache_dir}/{self.filename}", self.release_dir)
@@ -181,6 +181,30 @@ class DFHackPackage(GitHubPackage):
 
     def extract(self):
         self.unpack(f"{self.cache_dir}/{self.filename}", f"{self.release_dir}/df")
+
+class DwarfTherapistPackage(GitHubPackage):
+    def match_name(self, name):
+        os_in = {
+            'win32': 'win',
+            'win64': 'win',
+            'lin32': 'linux',
+            'lin64': 'linux',
+            'mac32': 'osx',
+            'mac64': 'osx'
+        }
+        return self.filter_name(name) and os_in[self.os_ver] in name
+
+    @property
+    def releases_url(self):
+        return "https://api.github.com/repos/Dwarf-Therapist/Dwarf-Therapist/releases"
+
+    def extract(self):
+        if self.os_ver in ['mac32','mac64']:
+            subprocess.run(["hdiutil","attach",f"{self.cache_dir}/{self.filename}"])
+            subprocess.run(["ditto", "-xk", f"/Volumes/{Path(self.filename).stem}", f"{self.release_dir}/LNP/utilities/"])
+            subprocess.run(["hdiutil","detach",f"/Volumes/{Path(self.filename).stem}"])
+        else:
+            self.unpack(f"{self.cache_dir}/{self.filename}", f"{self.release_dir}/LNP/utilities/")
 
 class TWBTPackage(GitHubPackage):
 
