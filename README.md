@@ -1,8 +1,6 @@
 # dfdl.py - Dwarf Fortress Starter Pack generator for Mac, running in Python
 
-The Lazy Mac Pack seems to have broken with later mac OS updates, and dfdl 
-has ruby versioning and html parsing issues now, so I decided to generate 
-a python-based lazy newb pack generator, which should hopefully be more 
+A python-based lazy newb pack generator, which should hopefully be somewhat 
 future-proof. I started by converting Juan Pumarino's ruby-based script 
 (https://github.com/jipumarino/dfdl), and have reduced the dependencies to 
 just base python 3.6+ and relevant command line utilities everyone should 
