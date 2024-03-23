@@ -62,7 +62,8 @@ is not present consider using homebrew or other relevant package installers.
 
 ## Token Management
 
-If you wish to modify this to use github tokens I recommend using json, as so:
+If you wish to modify this to use github tokens I recommend modifying the 
+script to use a json configuration file, as so:
 
 A 'config.json' file with:
 ```
@@ -82,8 +83,9 @@ class Config:
     def github_token():
         return Config.load()["github_token"]
 ```
-Which can be stored as a property of the Release class in dfdl.py with:
+Which can be stored as a property of the Release class set during init:
 ```
 self.config = Config.load()
 ```
-in the init function.
+You would then need to use it in the get_list method of the GitHubPackage 
+class in some way...
