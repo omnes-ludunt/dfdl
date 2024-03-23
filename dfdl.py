@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import os
 import json
 import platform
@@ -11,6 +12,18 @@ import time
 import urllib.request
 from pathlib import Path
 from html.parser import HTMLParser
+
+# Define and collect input arguments
+def parse_args():
+    parser = argparse.ArgumentParser()
+    
+    # Optional arguments
+    parser.add_argument('--gen_config', default=False, action='store_true',
+                        help='A flag telling the script to generate or overwrite the config.json file with a template, then exit.')
+    # parser.add_argument('--twbt', type=int, default=None,
+    #                     help='An integer flag determining the package to download - you should run it first to check the order. 0 will skip the package.')
+    args = parser.parse_args()
+    return args
 
 class PackageHTMLParser(HTMLParser):
     def __init__(self):
@@ -99,8 +112,27 @@ class GitHubPackage(Package):
             while True:
                 # Construct the URL with pagination parameters
                 page_url = f"{self.releases_url}?page={page}&per_page=100"
+                request = urllib.request.Request(page_url)
+                if 'config' in globals():
+                    gh_token = config["github_token"]
+                    request.add_header("Authorization", f"Bearer {gh_token}")
+                
+                # Printing specific information about the urllib request object
+                print("Request URL:", request.full_url)
+                print("Request Method:", request.get_method())
+                print("Request Headers:")
+                for header in request.headers.items():
+                    print(f"    {header[0]}: {header[1]}")
 
-                response = urllib.request.urlopen(page_url)
+                response = urllib.request.urlopen(request)
+
+                # Printing specific information about the HTTP response object
+                print("Response URL:", response.url)
+                print("Response Status Code:", response.status)
+                print("Response Headers:")
+                for header in response.headers.items():
+                    print(f"    {header[0]}: {header[1]}")
+
                 if response.status == 200:
                     data = json.loads(response.read())
                     current_assets = [a for r in data for a in r.get('assets', []) if self.match_name(a.get('name', ''))]
@@ -252,6 +284,12 @@ class PEStarterPackPackage(Package):
             elif file_path.is_dir():
                 shutil.rmtree(file_path)
 
+# For managing github tokens, as a module method
+class Config:
+    @staticmethod
+    def load():
+        with open("config.json", "r") as f:
+            return json.load(f)
 
 class Release:
     def __init__(self):
@@ -264,6 +302,12 @@ class Release:
         # self.target_dir = f"df-{os.environ['USER']}-{int(time.time())}"
         self.target_dir = f"df-{self.os_ver}-{time.strftime('%Y-%m-%d')}"
         print(f"The finished DF directory will be moved to {self.target_dir}")
+        choice = input(f"\nUse this directory name? (y/n)\n")
+        if choice.lower() != "y":
+            self.retry_dir()
+        if os.path.isfile("config.json"):
+            global config
+            config = Config.load()
 
     def check_os(self):
         os_ver = {
@@ -369,4 +413,10 @@ class Release:
         self.move_target()
 
 if __name__ == "__main__":
+    # Parse arguments
+    args = parse_args()
+    if args.gen_config:
+        with open("config.json","w") as cfg:
+            cfg.write("{\n    \"github_token\": \"your_github_token_here\"\n}\n")
+        exit(1)
     Release().run()
