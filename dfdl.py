@@ -363,7 +363,7 @@ class Release:
     def run(self):
         self.verify_target()
         self.run_packages()
-        self.copy_additional_tilesets()
+        # self.copy_additional_tilesets()
         self.setup_config()
         self.setup_apps()
         self.move_target()
