@@ -10,8 +10,8 @@ generally have already. If you have issues, or are trying it out on an OS
 other than 64-bit MacOS, let me know.
 
 
-From jipumarino's readme:
----
+## From jipumarino's readme:
+
 It downloads various packages and puts them together. It currently filters the
 available Mac downloads for the following packages, and lets the user choose a
 version for each:
@@ -39,8 +39,27 @@ I am _not_ retrieving any utilities at the moment. In the future I expect to
 download all utilities currently provided by PE's starter pack that have a
 Mac version.
 
-Token Management
----
+## Running
+
+You start the script from a terminal by running
+
+```
+./dfdl.py
+```
+
+It will provide a list of different versions of each package, you
+choose one by entering its number and pressing enter. I'm currently 
+using the latest 64 bit mac versions of all packages (e.g. with df 47.05),
+from which both the LNP and the dfhack Dwarf Fortress.apps work.
+
+## Dependencies
+
+The script should have no dependencies other than base python 3.6+. On mac 
+it calls the os-specific command `ditto` as a subprocess, which should be 
+included in every mac distribution. If a command line utility like `ditto` 
+is not present consider using homebrew or other relevant package installers.
+
+## Token Management
 
 If you wish to modify this to use github tokens I recommend using json, as so:
 
@@ -67,23 +86,3 @@ Which can be stored as a property of the Release class in dfdl.py with:
 self.config = Config.load()
 ```
 in the init function.
-
-## Dependencies
-
-The script should have no dependencies other than base python 3.6+. On mac 
-it calls the os-specific command `ditto` as a subprocess, which should be 
-included in every mac distribution. If a command line utility like `ditto` 
-is not present consider using homebrew or other relevant package installers.
-
-## Running
-
-You start the script from a terminal by running
-
-```
-./dfdl.py
-```
-
-It will provide a list of different versions of each package, you
-choose one by entering its number and pressing enter. I'm currently 
-using the latest 64 bit mac versions of all packages (e.g. with df 47.05),
-from which both the LNP and the dfhack Dwarf Fortress.apps work.
