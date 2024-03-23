@@ -2,14 +2,14 @@
 
 The Lazy Mac Pack seems to have broken with later mac OS updates, so I 
 decided to try organizing a scripted lazy newb pack generator using python. 
-I am basing this on converting Pumarino's ruby-based script 
+I am basing this on converting Juan Pumarino's ruby-based script 
 (https://github.com/jipumarino/dfdl), and have reduced the dependencies to 
 just base python 3.6+ and relevant command line utilities everyone should 
 generally have already. If you have issues, or are trying it out on an OS 
 other than 64-bit MacOS, let me know.
 
 
-From Pumarino's readme:
+From jipumarino's readme:
 ---
 It downloads various packages and puts them together. It currently filters the
 available Mac downloads for the following packages, and lets the user choose a
