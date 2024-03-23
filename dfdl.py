@@ -50,8 +50,6 @@ class Package:
             self.filename, self.url = choice['name'], choice['url']
 
     def download(self):
-        # subprocess.run(["curl", "-L", "-C", "-", self.url, "-o", f"{self.cache_dir}/{self.filename}"])
-        # urllib.request.urlretrieve(self.url, f"{self.cache_dir}/{self.filename}")
         if not os.path.isfile(f"{self.cache_dir}/{self.filename}"):
             with urllib.request.urlopen(self.url) as response, open(f"{self.cache_dir}/{self.filename}", 'wb') as out_file:
                 shutil.copyfileobj(response, out_file)
@@ -64,16 +62,7 @@ class Package:
         self.download()
         self.extract()
 
-    def filter_name(self, name): 
-        # os_rem = {
-        #     # {'ver': '', 'rem': ['mac','osx','OSX','lin','Lin','win','Win','64','32']},
-        #     'Windows (32-bit)': ['mac','osx','OSX','lin','Lin','64'],
-        #     'Windows (64-bit)': ['mac','osx','OSX','lin','Lin','32'],
-        #     'Linux (32-bit)': ['mac','osx','OSX','win','Win','64'],
-        #     'Linux (64-bit)': ['mac','osx','OSX','win','Win','32'],
-        #     'Mac (32-bit)': ['lin','Lin','win','Win','64'],
-        #     'Mac (64-bit)': ['lin','Lin','win','Win','32']
-        # }
+    def filter_name(self, name):
         os_rem = {
             # {'ver': '', 'rem': ['mac','osx','OSX','lin','Lin','win','Win','64','32']},
             'win32': ['mac','osx','OSX','lin','Lin','64'],
@@ -131,11 +120,6 @@ class GitHubPackage(Package):
         return self._list
 
 class PyLNPPackage(GitHubPackage):
-    # def match_name(self, name):
-    #     if self.os_ver == 'mac32':
-    #         return ('OSX' in name or 'macOS' in name) and '64' not in name
-    #     if self.os_ver == 'mac64':
-    #         return ('OSX' in name or 'macOS' in name) and '32' not in name
 
     @property
     def releases_url(self):
@@ -238,12 +222,12 @@ class Release:
         self.os_ver = self.check_os()
         self.temp_dir_obj = tempfile.TemporaryDirectory()
         self.release_dir = self.temp_dir_obj.name
-        print(f"Preparing temporary directory at {self.release_dir}")
+        print(f"\nPreparing a temporary directory at {self.release_dir}")
         self.cache_dir = Path("package_cache")
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         # self.target_dir = f"df-{os.environ['USER']}-{int(time.time())}"
         self.target_dir = f"df-{os.environ['USER']}-{time.strftime('%Y-%m-%d')}"
-        print(f"Will move finished directory to target folder {self.target_dir}")
+        print(f"The finished DF directory will be moved to {self.target_dir}")
 
     def check_os(self):
         os_ver = {
@@ -260,7 +244,7 @@ class Release:
             'Darwin':['Mac (32-bit)','Mac (64-bit)']
         }
         detected_os = os_match[platform.system()][sys.maxsize > 2**32]
-        choice = input(f"\nSystem detected as '{detected_os}'. Is this correct? (y/n)")
+        choice = input(f"\nSystem detected as '{detected_os}'. Is this correct? (y/n)\n")
         if choice.lower() == "y":
             return os_ver[detected_os]
         else:
@@ -279,8 +263,14 @@ class Release:
             return os_ver[os_list[index]]
 
     def verify_target(self):
+        try:
+            os.access(self.target_dir, os.W_OK)
+        except Exception as e:
+            print(e)
+            print(f"\nThe target folder '{self.target_dir}' is not valid.")
+            self.retry_dir()
         if os.path.exists(self.target_dir):
-            choice = input(f"\nThe target folder '{self.target_dir}' already exists. Do you want to overwrite it? (y/n)")
+            choice = input(f"\nThe target folder '{self.target_dir}' already exists. Do you want to remove it? (y/n)\n")
             if choice.lower() == "y":
                 # shutil.rmtree(self.target_dir,ignore_errors=True)
                 for file_path in Path(self.target_dir).glob("*"):
@@ -289,9 +279,19 @@ class Release:
                     elif file_path.is_dir():
                         shutil.rmtree(file_path)
                 shutil.rmtree(self.target_dir)
+                return
             else:
-                print("Quitting.")
-                exit(0)
+                self.retry_dir()
+
+    def retry_dir(self):
+        alt_dir = input(f"\nEnter an alternate folder suffix to generate a df-suffix target folder, or q to quit.\n")
+        if alt_dir.lower() == "q":
+            print("Quitting.")
+            exit(0)
+        else:
+            self.target_dir = 'df-'+alt_dir
+            print(f"The finished DF directory will be moved to {self.target_dir}")
+            self.verify_target()
 
     def run_packages(self):
         PyLNPPackage(self.release_dir, self.cache_dir, self.os_ver).run()
