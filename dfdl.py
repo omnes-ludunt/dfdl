@@ -150,6 +150,18 @@ class DFPackage(Package):
                 parser.feed(response.read().decode())
             self._list = [{'name': href, 'url': f"http://bay12games.com/dwarves/{href}"} for href in parser.hrefs if self.match_name(href)]
         return self._list
+    
+    def extract(self):
+        self.unpack(f"{self.cache_dir}/{self.filename}", self.release_dir)
+        df_dir = [name for name in os.listdir(self.release_dir) if 'df' in name]
+        if len(df_dir) != 1:
+            if len(df_dir) > 1:
+                raise ValueError('Unexpected behavior, more than one path identified as an unpacked df folder:\n'+
+                                 str(df_dir)+' selected from '+str(os.listdir(self.release_dir)))
+            else:
+                raise ValueError('Unexpected behavior, no path identified as an unpacked df folder after extraction:\n'+
+                                 str(df_dir)+' selected from '+str(os.listdir(self.release_dir)))
+        shutil.move(f"{self.release_dir}/{df_dir[0]}", f"{self.release_dir}/df")
 
 class DFHackPackage(GitHubPackage):
     def match_name(self, name):
@@ -168,7 +180,7 @@ class DFHackPackage(GitHubPackage):
         return "https://api.github.com/repos/DFHack/dfhack/releases"
 
     def extract(self):
-        self.unpack(f"{self.cache_dir}/{self.filename}", f"{self.release_dir}/df_osx")
+        self.unpack(f"{self.cache_dir}/{self.filename}", f"{self.release_dir}/df")
 
 class TWBTPackage(GitHubPackage):
 
@@ -181,17 +193,17 @@ class TWBTPackage(GitHubPackage):
         for ext in ['png', 'lua', 'dylib']:
             for file_path in Path(f"{self.release_dir}/twbt").glob(f"*.{ext}"):
                 if ext == 'dylib':
-                    shutil.move(file_path, f"{self.release_dir}/df_osx/hack/plugins")
+                    shutil.move(file_path, f"{self.release_dir}/df/hack/plugins")
                 elif ext == 'lua':
-                    shutil.move(file_path, f"{self.release_dir}/df_osx/hack/lua")
+                    shutil.move(file_path, f"{self.release_dir}/df/hack/lua")
                 elif ext == 'png':
-                    # print(f"{self.release_dir}/df_osx/data/art/{file_path.name}")
-                    # print(os.path.isfile(f"{self.release_dir}/df_osx/data/art/{file_path.name}"))
-                    if os.path.isfile(f"{self.release_dir}/df_osx/data/art/{file_path.name}"):
-                        os.remove(f"{self.release_dir}/df_osx/data/art/{file_path.name}")
-                    shutil.move(file_path, f"{self.release_dir}/df_osx/data/art")
-        if os.path.isfile(f"{self.release_dir}/df_osx/data/init/overrides.txt"):
-            os.remove(f"{self.release_dir}/df_osx/data/init/overrides.txt")
+                    # print(f"{self.release_dir}/df/data/art/{file_path.name}")
+                    # print(os.path.isfile(f"{self.release_dir}/df/data/art/{file_path.name}"))
+                    if os.path.isfile(f"{self.release_dir}/df/data/art/{file_path.name}"):
+                        os.remove(f"{self.release_dir}/df/data/art/{file_path.name}")
+                    shutil.move(file_path, f"{self.release_dir}/df/data/art")
+        if os.path.isfile(f"{self.release_dir}/df/data/init/overrides.txt"):
+            os.remove(f"{self.release_dir}/df/data/init/overrides.txt")
         shutil.rmtree(f"{self.release_dir}/twbt")
 
 class PEStarterPackPackage(Package):    
@@ -226,7 +238,7 @@ class Release:
         self.cache_dir = Path("package_cache")
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         # self.target_dir = f"df-{os.environ['USER']}-{int(time.time())}"
-        self.target_dir = f"df-{os.environ['USER']}-{time.strftime('%Y-%m-%d')}"
+        self.target_dir = f"df-{self.os_ver}-{time.strftime('%Y-%m-%d')}"
         print(f"The finished DF directory will be moved to {self.target_dir}")
 
     def check_os(self):
@@ -305,9 +317,9 @@ class Release:
             shutil.copy(tileset, f"{self.release_dir}/LNP/tilesets")
 
     def setup_config(self):
-        if os.path.isfile(f"{self.release_dir}/df_osx/dfhack.init-example"):
-            shutil.copy(f"{self.release_dir}/df_osx/dfhack.init-example", f"{self.release_dir}/df_osx/dfhack.init")
-        with open(f"{self.release_dir}/df_osx/data/init/init.txt", 'r+') as f:
+        if os.path.isfile(f"{self.release_dir}/df/dfhack.init-example"):
+            shutil.copy(f"{self.release_dir}/df/dfhack.init-example", f"{self.release_dir}/df/dfhack.init")
+        with open(f"{self.release_dir}/df/data/init/init.txt", 'r+') as f:
             content = f.read()
             f.seek(0)
             f.write(content.replace("[PRINT_MODE:2D]", "[PRINT_MODE:TWBT]"))
