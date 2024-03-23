@@ -116,23 +116,7 @@ class GitHubPackage(Package):
                 if 'config' in globals():
                     gh_token = config["github_token"]
                     request.add_header("Authorization", f"Bearer {gh_token}")
-                
-                # Printing specific information about the urllib request object
-                print("Request URL:", request.full_url)
-                print("Request Method:", request.get_method())
-                print("Request Headers:")
-                for header in request.headers.items():
-                    print(f"    {header[0]}: {header[1]}")
-
                 response = urllib.request.urlopen(request)
-
-                # Printing specific information about the HTTP response object
-                print("Response URL:", response.url)
-                print("Response Status Code:", response.status)
-                print("Response Headers:")
-                for header in response.headers.items():
-                    print(f"    {header[0]}: {header[1]}")
-
                 if response.status == 200:
                     data = json.loads(response.read())
                     current_assets = [a for r in data for a in r.get('assets', []) if self.match_name(a.get('name', ''))]
