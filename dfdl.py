@@ -134,6 +134,15 @@ class GitHubPackage(Package):
                 
             self._list = [{'name': a.get('name', ''), 'url': a.get('browser_download_url', '')} for a in assets]
         return self._list
+    
+    def download(self):
+        if not os.path.isfile(f"{self.cache_dir}/{self.filename}"):
+            request = urllib.request.Request(self.url)
+            if 'config' in globals():
+                gh_token = config["github_token"]
+                request.add_header("Authorization", f"Bearer {gh_token}")
+            with urllib.request.urlopen(request) as response, open(f"{self.cache_dir}/{self.filename}", 'wb') as out_file:
+                shutil.copyfileobj(response, out_file)
 
 class PyLNPPackage(GitHubPackage):
 
@@ -230,20 +239,26 @@ class TWBTPackage(GitHubPackage):
 
     def extract(self):
         self.unpack(f"{self.cache_dir}/{self.filename}", f"{self.release_dir}/twbt")
-        for ext in ['png', 'lua', 'dylib']:
+        twbt_dirs = [name for name in os.listdir(f"{self.release_dir}/twbt") 
+                     if os.path.isdir(f"{self.release_dir}/twbt/{name}") 
+                     and not name.startswith("_") and not name.startswith(".")]
+        if len(twbt_dirs) != 1:
+            raise ValueError('Could not uniquely identify twbt plugin folder from:\n'+str(twbt_dirs))
+        else:
+            for file_path in Path(f"{self.release_dir}/twbt/{twbt_dirs[0]}").glob("*"):
+                shutil.move(file_path, f"{self.release_dir}/df/hack/plugins")
+            shutil.rmtree(f"{self.release_dir}/twbt/{twbt_dirs[0]}")
+        for ext in ['png', 'lua']:
             for file_path in Path(f"{self.release_dir}/twbt").glob(f"*.{ext}"):
-                if ext == 'dylib':
-                    shutil.move(file_path, f"{self.release_dir}/df/hack/plugins")
-                elif ext == 'lua':
+                if ext == 'lua':
                     shutil.move(file_path, f"{self.release_dir}/df/hack/lua")
                 elif ext == 'png':
-                    # print(f"{self.release_dir}/df/data/art/{file_path.name}")
-                    # print(os.path.isfile(f"{self.release_dir}/df/data/art/{file_path.name}"))
                     if os.path.isfile(f"{self.release_dir}/df/data/art/{file_path.name}"):
                         os.remove(f"{self.release_dir}/df/data/art/{file_path.name}")
                     shutil.move(file_path, f"{self.release_dir}/df/data/art")
         if os.path.isfile(f"{self.release_dir}/df/data/init/overrides.txt"):
             os.remove(f"{self.release_dir}/df/data/init/overrides.txt")
+        shutil.move(f"{self.release_dir}/twbt/overrides.txt", f"{self.release_dir}/df/data/init/")
         shutil.rmtree(f"{self.release_dir}/twbt")
 
 class PEStarterPackPackage(Package):    
