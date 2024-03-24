@@ -207,6 +207,38 @@ class DFHackPackage(GitHubPackage):
     def extract(self):
         self.unpack(f"{self.cache_dir}/{self.filename}", f"{self.release_dir}/df")
 
+class RubyPackage(Package):    
+    def match_name(self, name):
+        os_in = {
+            'win32': 'zip',
+            'win64': 'zip',
+            'lin32': 'linux',
+            'lin64': 'linux',
+            'mac32': 'osx',
+            'mac64': 'osx'
+        }
+        return self.filter_name(name) and os_in[self.os_ver] in name
+    
+    def get_list(self):
+        if self.os_ver in ['mac64']:
+            return [{'name':"ruby-2.7.5.tar.bz2", 
+                    #  'name':"ruby 2.7.5 on Mac OS X 10.13 (x86_64)", 
+                     'url':"https://s3.amazonaws.com/travis-rubies/binaries/osx/10.13/x86_64/ruby-2.7.5.tar.bz2"}]
+    
+    def extract(self):
+        self.unpack(f"{self.cache_dir}/{self.filename}", f"{self.release_dir}")
+        # input(f"\nContinue? (y/n)\n")
+        shutil.move(f"{self.release_dir}/ruby-2.7.5/lib/libruby.2.7.dylib", f"{self.release_dir}/df/hack/libruby.dylib")
+        # if self.os_ver in ['mac32','mac64']:
+        #     subprocess.run(["xattr","-d","com.apple.quarantine", f"{self.release_dir}/df/hack/libruby.dylib"])
+        # if self.os_ver in ['lin32','lin64']:
+        #     subprocess.run(["xattr","-d","com.apple.quarantine", f"{self.release_dir}/df/hack/libruby.dylib"])
+        for file_path in Path(self.release_dir, "ruby").glob("*"):
+            if file_path.is_file():
+                os.remove(file_path)
+            elif file_path.is_dir():
+                shutil.rmtree(file_path)
+
 class DwarfTherapistPackage(GitHubPackage):
     def match_name(self, name):
         os_in = {
@@ -228,7 +260,9 @@ class DwarfTherapistPackage(GitHubPackage):
             subprocess.run(["hdiutil","attach",f"{self.cache_dir}/{self.filename}"])
             subprocess.run(["ditto", "-xk", f"/Volumes/{Path(self.filename).stem}", f"{self.release_dir}/LNP/utilities/"])
             subprocess.run(["hdiutil","detach",f"/Volumes/{Path(self.filename).stem}"])
-        else:
+        elif self.os_ver in ['lin32','lin64']:
+            self.unpack(f"{self.cache_dir}/{self.filename}", f"{self.release_dir}/LNP/utilities/")
+        elif self.os_ver in ['win32','win64']:
             self.unpack(f"{self.cache_dir}/{self.filename}", f"{self.release_dir}/LNP/utilities/")
 
 class TWBTPackage(GitHubPackage):
@@ -378,6 +412,8 @@ class Release:
         DFPackage(self.release_dir, self.cache_dir, self.os_ver).run()
         DFHackPackage(self.release_dir, self.cache_dir, self.os_ver).run()
         TWBTPackage(self.release_dir, self.cache_dir, self.os_ver).run()
+        if self.os_ver in ['mac64']:
+            RubyPackage(self.release_dir, self.cache_dir, self.os_ver).run()
 
     def copy_additional_tilesets(self):
         for tileset in Path("tilesets").glob("*"):

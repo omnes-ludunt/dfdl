@@ -4,8 +4,12 @@ A python-based lazy newb pack generator, which should hopefully be somewhat
 future-proof. I started by converting Juan Pumarino's ruby-based script 
 (https://github.com/jipumarino/dfdl), and have reduced the dependencies to 
 just base python 3.6+ and relevant command line utilities everyone should 
-generally have already. If you have issues, or are trying it out on an OS 
-other than 64-bit MacOS, let me know.
+generally have already.
+
+If you have issues, or are trying it out on an OS other than 64-bit MacOS, 
+let me know. It probably won't work on other OSs atm, but it will still try 
+downloading all the packages. 32-bit is also no longer supported by a number 
+of tools, and so would never work for newer df versions.
 
 
 ## From jipumarino's readme:
@@ -54,9 +58,10 @@ version of PE's Starter Pack, as the later versions gave archive format errors.
 ## Dependencies
 
 The script should have no dependencies other than base python 3.6+. On mac 
-it calls the os-specific command `ditto` as a subprocess, which is included 
-in every mac distribution. If a command line utility like `ditto` is not 
-present consider using homebrew or other relevant package installers.
+it calls the osx-specific command `ditto` as a
+subprocess, which is included in every MacOS distribution. If a command 
+line utility is not present consider using homebrew or another relevant 
+package installers.
 
 ## Token Management
 
