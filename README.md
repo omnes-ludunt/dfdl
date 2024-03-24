@@ -54,36 +54,31 @@ version of PE's Starter Pack, as the later versions gave archive format errors.
 ## Dependencies
 
 The script should have no dependencies other than base python 3.6+. On mac 
-it calls the os-specific command `ditto` as a subprocess, which should be 
-included in every mac distribution. If a command line utility like `ditto` 
-is not present consider using homebrew or other relevant package installers.
+it calls the os-specific command `ditto` as a subprocess, which is included 
+in every mac distribution. If a command line utility like `ditto` is not 
+present consider using homebrew or other relevant package installers.
 
 ## Token Management
 
-If you wish to modify this to use github tokens I recommend modifying the 
-script to use a json configuration file, as so:
+If you wish to use github tokens, you can do so with a config.json file. 
+Github no longer seems to provide a speed bost on api calls though, so as 
+far as I can tell you do not need to do this. If you want to though, you 
+can generate a config.json by calling the script with a --gen_config flag:
 
-A 'config.json' file with:
+```
+./dfdl.py --gen_config
+```
+
+The 'config.json' file will initially have the following format:
 ```
 {
     "github_token": "your_github_token_here"
 }
 ```
-Another class in the dfdl.py script:
-```
-class Config:
-    @staticmethod
-    def load():
-        with open("config.json", 'r') as f:
-            return json.load(f)
+If you want to know more about personal access tokens, see:
 
-    @staticmethod
-    def github_token():
-        return Config.load()["github_token"]
-```
-Which can be stored as a property of the Release class set during init:
-```
-self.config = Config.load()
-```
-You would then need to use it in the get_list method of the GitHubPackage 
-class in some way...
+https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
+
+If you want to know more about authorization on the API generally, see:
+
+https://docs.github.com/en/rest/authentication/authenticating-to-the-rest-api
