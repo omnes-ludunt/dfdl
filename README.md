@@ -43,17 +43,21 @@ Mac version.
 
 ## Running
 
-You start the script from a terminal by running
+You start the script from a terminal by navigating to the dfdl directory and 
+running
 
 ```
 ./dfdl.py
+```
+or
+```
+python dfdl.py
 ```
 
 It will provide a list of different versions of each package, you choose one 
 by entering its number and pressing enter. I've generated a working directory 
 with both LNP and the dfhack Dwarf Fortress.apps using the latest 64 bit mac 
-versions of all packages (with df 47.05), except that I used the 0.47.05-r09 
-version of PE's Starter Pack, as the later versions gave archive format errors.
+versions of all packages (with df 47.05).
 
 ## Dependencies
 
