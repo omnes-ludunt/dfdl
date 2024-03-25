@@ -233,11 +233,12 @@ class RubyPackage(Package):
         #     subprocess.run(["xattr","-d","com.apple.quarantine", f"{self.release_dir}/df/hack/libruby.dylib"])
         # if self.os_ver in ['lin32','lin64']:
         #     subprocess.run(["xattr","-d","com.apple.quarantine", f"{self.release_dir}/df/hack/libruby.dylib"])
-        for file_path in Path(self.release_dir, "ruby").glob("*"):
+        for file_path in Path(self.release_dir, "ruby-2.7.5").glob("*"):
             if file_path.is_file():
                 os.remove(file_path)
-            elif file_path.is_dir():
-                shutil.rmtree(file_path)
+            # elif file_path.is_dir():
+            #     shutil.rmtree(file_path)
+        shutil.rmtree(f"{self.release_dir}/ruby-2.7.5")
 
 class DwarfTherapistPackage(GitHubPackage):
     def match_name(self, name):
@@ -326,6 +327,13 @@ class Config:
 
 class Release:
     def __init__(self):
+        # Parse arguments
+        args = parse_args()
+        if args.gen_config:
+            with open("config.json","w") as cfg:
+                cfg.write("{\n    \"github_token\": \"your_github_token_here\"\n}\n")
+            exit(1)
+        # Set version and os variables
         self.os_ver = self.check_os()
         self.temp_dir_obj = tempfile.TemporaryDirectory()
         self.release_dir = self.temp_dir_obj.name
@@ -448,10 +456,4 @@ class Release:
         self.move_target()
 
 if __name__ == "__main__":
-    # Parse arguments
-    args = parse_args()
-    if args.gen_config:
-        with open("config.json","w") as cfg:
-            cfg.write("{\n    \"github_token\": \"your_github_token_here\"\n}\n")
-        exit(1)
     Release().run()
