@@ -6,10 +6,13 @@ future-proof. I started by converting Juan Pumarino's ruby-based script
 just base python 3.6+ and relevant command line utilities everyone should 
 generally have already.
 
-If you have issues, or are trying it out on an OS other than 64-bit MacOS, 
-let me know. It probably won't work on other OSs atm, but it will still try 
-downloading all the packages. 32-bit is also no longer supported by a number 
-of tools, and so would never work for newer df versions.
+If you're on an Intel Mac and aren't sure about the options, inputting y or 
+1 for every prompt should build a working install for you.
+
+If you have issues, or are trying it out on system other than a 64-bit MacOS 
+on an Intel chipset, let me know. It shouldn't work on other OSs atm, but it 
+will still try downloading all the packages. 32-bit is also no longer 
+supported by a number of tools, and so would never work for newer df versions.
 
 
 ## From jipumarino's readme:
@@ -62,10 +65,9 @@ versions of all packages (with df 47.05).
 ## Dependencies
 
 The script should have no dependencies other than base python 3.6+. On mac 
-it calls the osx-specific command `ditto` as a
-subprocess, which is included in every MacOS distribution. If a command 
-line utility is not present consider using homebrew or another relevant 
-package installers.
+it calls osx-specific commands like `ditto` as subprocesses, which are 
+included in all MacOS distributions. Regardless, if a command-line utility 
+is not present consider using homebrew or another relevant package installer.
 
 ## Token Management
 
@@ -84,10 +86,8 @@ The 'config.json' file will initially have the following format:
     "github_token": "your_github_token_here"
 }
 ```
-If you want to know more about personal access tokens, see:
+If you want to know more:
 
-https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
+* [Information about personal access tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
 
-If you want to know more about authorization on the API generally, see:
-
-https://docs.github.com/en/rest/authentication/authenticating-to-the-rest-api
+* [Information about authorization on the API generally](https://docs.github.com/en/rest/authentication/authenticating-to-the-rest-api)

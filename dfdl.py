@@ -93,6 +93,21 @@ class Package:
     def unpack(self, src, dest):
         shutil.unpack_archive(src, dest)
 
+    def merge_dirs(self, source, target, overwrite=False):
+        if not os.path.exists(target):
+            os.makedirs(target)
+        for name in os.listdir(source):
+            s = os.path.join(source, name)
+            t = os.path.join(target, name)
+            if os.path.isdir(s):
+                self.merge_dirs(s,t)
+            else:
+                if name in os.listdir(target):
+                    if overwrite:
+                        shutil.copy2(s, t)
+                else:
+                    shutil.copy2(s, t)
+
 class BitBucketPackage(Package):
     def get_list(self):
         if not hasattr(self, '_list'):
@@ -296,6 +311,33 @@ class TWBTPackage(GitHubPackage):
         shutil.move(f"{self.release_dir}/twbt/overrides.txt", f"{self.release_dir}/df/data/init/")
         shutil.rmtree(f"{self.release_dir}/twbt")
 
+class SoundsensePackage(Package):    
+    def match_name(self, name):
+        return 'zip' in name and 'soundpack' not in name
+    
+    @property
+    def releases_url(self):
+        return "https://df.zweistein.cz/soundsense/"
+    
+    def get_list(self):
+        if not hasattr(self, '_list'):
+            with urllib.request.urlopen("https://df.zweistein.cz/soundsense/") as response:
+                parser = PackageHTMLParser()
+                parser.feed(response.read().decode())
+            self._list = [{'name': href, 'url': f"https://df.zweistein.cz/soundsense/{href}"} for href in parser.hrefs if self.match_name(href)]
+        return self._list
+    
+    # https://df.zweistein.cz/soundsense/soundpack.zip
+    
+    # def extract(self):
+    #     self.unpack(f"{self.cache_dir}/{self.filename}", f"{self.release_dir}")
+    #     input(f"\nContinue? (y/n)\n")
+    #     shutil.move(f"{self.release_dir}/ruby-2.7.5/lib/libruby.2.7.dylib", f"{self.release_dir}/df/hack/libruby.dylib")
+    #     for file_path in Path(self.release_dir, "ruby-2.7.5").glob("*"):
+    #         if file_path.is_file():
+    #             os.remove(file_path)
+    #     shutil.rmtree(f"{self.release_dir}/ruby-2.7.5")
+
 class PEStarterPackPackage(Package):    
     def get_list(self):
         if not hasattr(self, '_list'):
@@ -307,16 +349,64 @@ class PEStarterPackPackage(Package):
     
 
     def extract(self):
-        self.unpack(f"{self.cache_dir}/{self.filename}", self.release_dir)
-        for file_path in Path(self.release_dir).glob("*.exe"):
-            os.remove(file_path)
-        for file_path in Path(self.release_dir).glob("Dwarf Fortress *"):
-            shutil.rmtree(file_path)
-        for file_path in Path(self.release_dir, "LNP", "utilities").glob("*"):
+        self.unpack(f"{self.cache_dir}/{self.filename}", f"{self.release_dir}/PESP")
+        # input(f"\nContinue? (y/n)\n")
+        for folder in ['colors','defaults','embarks','graphics','keybinds','tilesets']:
+            self.merge_dirs(f"{self.release_dir}/PESP/LNP/{folder}",f"{self.release_dir}/LNP/{folder}")
+        # for file_path in Path(self.release_dir).glob("*.exe"):
+        #     os.remove(file_path)
+        # for file_path in Path(self.release_dir).glob("Dwarf Fortress *"):
+        #     shutil.rmtree(file_path)
+        # for file_path in Path(self.release_dir, "LNP", "utilities").glob("*"):
+        #     if file_path.is_file():
+        #         os.remove(file_path)
+        #     elif file_path.is_dir():
+        #         shutil.rmtree(file_path)
+        # input(f"\nContinue? (y/n)\n")
+        for file_path in Path(f"{self.release_dir}/PESP/").glob("*"):
             if file_path.is_file():
                 os.remove(file_path)
-            elif file_path.is_dir():
-                shutil.rmtree(file_path)
+        shutil.rmtree(f"{self.release_dir}/PESP")
+
+
+class LMPPackage(Package):
+    def get_list(self):
+        if self.os_ver in ['mac64']:
+            return [
+                {'name':"Lazy Mac Pack v0.47.05 dfhack-r1.dmg",
+                 'url':"https://dffd.bay12games.com/download.php?id=12202&f=Lazy+Mac+Pack+v0.47.05+dfhack-r1.dmg"},
+                {'name':"Lite Lazy Mac Pack v0.47.04.dmg",
+                 'url':"https://dffd.bay12games.com/download.php?id=12310&f=Lazy+Mac+Pack+v0.47.04.dmg"},
+                {'name':"Mac OS X 10.6-10.8 Lazy Mac Pack v0.44.09-32.dmg",
+                 'url':"https://dffd.bay12games.com/download.php?id=12061&f=Lazy+Mac+Pack+v0.44.09-32.dmg"},
+                {'name':"Mac OS X 10.5 Dwarf Fortress SSTM Pack v0.44.02.dmg",
+                 'url':"https://dffd.bay12games.com/download.php?id=12093&f=Dwarf+Fortress+SSTM+Pack+v0.44.02.dmg"},
+            ]    
+
+    def extract(self):
+        if self.os_ver in ['mac32','mac64']:
+            # input(f"\nAttach the .dmg? (y/n)\n")
+            subprocess.run(["hdiutil","attach",f"{self.cache_dir}/{self.filename}"])
+            lmp_dir = [name for name in os.listdir(f"/Volumes/{Path(self.filename).stem}")
+                       if 'App' not in name and '.DS' not in name]
+            if len(lmp_dir) != 1:
+                if len(lmp_dir) > 1:
+                    raise ValueError('Unexpected behavior, more than one path identified as an LMP folder:\n'+
+                                    str(lmp_dir)+' selected from '+str(os.listdir(f"/Volumes/{Path(self.filename).stem}")))
+                else:
+                    raise ValueError('Unexpected behavior, no path identified as an LMP folder after mounting the .dmg:\n'+
+                                    str(lmp_dir)+' selected from '+str(os.listdir(f"/Volumes/{Path(self.filename).stem}")))
+            # print("\nIdentified LMP Volume:\n"+str(lmp_dir))
+            # input(f"\nCopy this volume? (y/n)\n"+str(["ditto", f"/Volumes/{Path(self.filename).stem}/{lmp_dir[0]}", f"{self.release_dir}/LMP"])+"\n(y/n)\n")
+            subprocess.run(["ditto", f"/Volumes/{Path(self.filename).stem}/{lmp_dir[0]}", f"{self.release_dir}/LMP"])
+            # input(f"\nDetach this volume?\n"+str(["hdiutil","detach",f"/Volumes/{Path(self.filename).stem}"])+"\n(y/n)\n")
+            subprocess.run(["hdiutil","detach",f"/Volumes/{Path(self.filename).stem}"])
+            # input(f"\nExtract the LNP files? (y/n)\n")
+            shutil.move(f"{self.release_dir}/LMP/LNP", f"{self.release_dir}/LNP")
+            for file_path in Path(f"{self.release_dir}/LMP/").glob("*"):
+                if file_path.is_file():
+                    os.remove(file_path)
+            shutil.rmtree(f"{self.release_dir}/LMP")
 
 # For managing github tokens, as a module method
 class Config:
@@ -333,6 +423,9 @@ class Release:
             with open("config.json","w") as cfg:
                 cfg.write("{\n    \"github_token\": \"your_github_token_here\"\n}\n")
             exit(1)
+        # Start a log file
+        self.log = ''
+        # Track which packages will be
         # Set version and os variables
         self.os_ver = self.check_os()
         self.temp_dir_obj = tempfile.TemporaryDirectory()
@@ -416,6 +509,7 @@ class Release:
 
     def run_packages(self):
         PyLNPPackage(self.release_dir, self.cache_dir, self.os_ver).run()
+        LMPPackage(self.release_dir, self.cache_dir, self.os_ver).run()
         PEStarterPackPackage(self.release_dir, self.cache_dir, self.os_ver).run()
         DFPackage(self.release_dir, self.cache_dir, self.os_ver).run()
         DFHackPackage(self.release_dir, self.cache_dir, self.os_ver).run()
@@ -442,10 +536,13 @@ class Release:
         shutil.copy("apps/LNPInfo.plist", f"{self.release_dir}/PyLNP.app/Contents/Info.plist")
         shutil.copy("apps/remove_quarantine", f"{self.release_dir}/remove_quarantine")
         os.rename(f"{self.release_dir}/PyLNP.app", f"{self.release_dir}/Dwarf Fortress LNP.app")
+        os.rename(f"{self.release_dir}/df", f"{self.release_dir}/df_osx")
         Path(f"{self.release_dir}/Dwarf Fortress LNP.app").touch()
 
     def move_target(self):
         shutil.move(self.release_dir, self.target_dir)
+        with open(f"{self.target_dir}/dfdl_build.txt",'w') as log_file:
+            log_file.write(self.log)
 
     def run(self):
         self.verify_target()
