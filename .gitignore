@@ -1,6 +1,12 @@
 /package_cache
+/build
+/dist
 /df-*
 /config.json
 /tilesets
+/testing
+*backtrace.txt
 *__pycache__/
 *.DS_Store
+dfdl.spec
+wscript.spec
